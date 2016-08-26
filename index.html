@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../styles.css" />
+    <style>
+      body {
+        background: #f5f5f5;
+      }
+    </style>
+  </head>
+
+  <body style='margin:0;padding:0'>
+    <div class="top"></div>
+    <div class="right"></div>
+    <div class="bottom"></div>
+    <div class="left"></div>
+
+    <svg id='svg' style='margin:0;padding:0'>
+      <g style='display:none'>
+        <path id='part-1' fill='#dfdfdf' d='M36.5,26.6C35,32.6,29.7,37,23.3,37c-1.7,0-3.3-0.3-4.7-0.9l-0.4,0.6L12.2,44c3.3,1.8,7.1,2.8,11.1,2.8c11.7,0,21.5-8.8,23.1-20.2H36.5z'/>
+        <path id='part-2' fill='#dfdfdf' d='M36.8,22h9.8C45.8,9.7,35.7,0,23.3,0C11,0,0.8,9.7,0,21.9V22l9.8,0c0,0,0-0.1,0-0.2c0.8-6.8,6.6-12.1,13.5-12.1C30.3,9.8,36.1,15.2,36.8,22z'/>
+        <path id='part-3' fill='#dfdfdf' d='M0.5,26.6H0v24.6l20.2-24.6H0.5z'/>
+      </g>
+    </svg>
+
+    <header>
+      <svg>
+        <path d='M36.5,26.6C35,32.6,29.7,37,23.3,37c-1.7,0-3.3-0.3-4.7-0.9l-0.4,0.6L12.2,44c3.3,1.8,7.1,2.8,11.1,2.8c11.7,0,21.5-8.8,23.1-20.2H36.5z'/>
+        <path d='M36.8,22h9.8C45.8,9.7,35.7,0,23.3,0C11,0,0.8,9.7,0,21.9V22l9.8,0c0,0,0-0.1,0-0.2c0.8-6.8,6.6-12.1,13.5-12.1C30.3,9.8,36.1,15.2,36.8,22z'/>
+        <path d='M0.5,26.6H0v24.6l20.2-24.6H0.5z'/>
+      </svg>
+
+      <ul>
+        <li>Case Studies</li>
+        <li>Careers</li>
+        <li>Contact</li>
+      </ul>
+    </header>
+
+    <div class="hero-content">
+      <h1>Let's make<br>software better.</h1>
+      <hr class="short-hr">
+      <p>Philosophie helps companies design and build better software by focusing on the users and humanizing the process.</p>
+      <button>Let's Chitchat</button>
+    </div>
+    <script>
+var mouse_x = 0;
+var mouse_y = 0;
+
+document.onmousemove = function (e) { mouse_x = e.clientX; mouse_y = e.clientY; };
+
+var width = innerWidth;
+var height = innerHeight * 10;
+
+var svg = document.getElementById('svg');
+svg.setAttribute('width', width);
+svg.setAttribute('height', height);
+
+var circle_elems = [];
+var circle_data = [];
+
+for(var i = 0; i < 50; i++) {
+  var part = '';
+  var r = Math.random();
+
+  if (r < 0.3) {
+    part = 'part-1';
+  } else if (r < 0.6) {
+    part = 'part-2';
+  } else {
+    part = 'part-3'
+  }
+
+  var new_circle_elem = svg.appendChild(document.getElementById(part).cloneNode());
+  circle_elems.push(new_circle_elem);
+  new_circle_elem.setAttribute('id', undefined);
+
+  var new_circle_data = {
+    x: Math.random() * -2000,
+    y: Math.random() * 1200 + 100,
+    z: Math.random() * 0.4,
+    vx: (Math.random() * 0.2 + 0.1) * 10,
+    vy: (Math.random() * 0.2 + 0.1) * -3,
+    rotation: Math.floor(Math.random() * 8),
+    target_render_x: 0,
+    target_render_y: 0,
+    render_x: undefined,
+    render_y: undefined
+  };
+
+  new_circle_data.r = 0.9 * (1 - (new_circle_data.z / 0.4)) + 0.1;
+
+  circle_data.push(new_circle_data);
+}
+
+var update = function() {
+  for(var i = 0; i < circle_data.length; i++) {
+    var circle = circle_data[i];
+
+    circle.x += circle.vx;
+    circle.y += circle.vy;
+
+    circle.target_render_x = ((circle.x * (0.4-circle.z) + innerWidth / 2) % (innerWidth + 500)) - 250;
+    circle.target_render_y = (circle.y + document.body.scrollTop) * (0.4-circle.z) + innerHeight / 2;
+
+    if (Math.abs(circle.target_render_x - circle.render_x) > innerWidth) {
+      circle.render_x = circle.target_render_x;
+      circle.y = Math.random() * 800 + 200;
+    }
+
+    var dx = circle.target_render_x - mouse_x;
+    var dy = circle.target_render_y - mouse_y - document.body.scrollTop;
+    var angle = Math.atan2(dy, dx);
+    var dist = Math.sqrt(dx*dx + dy*dy);
+
+    circle.target_render_x -= Math.cos(angle) * 0;
+    circle.target_render_y -= Math.sin(angle) * 0;
+
+    if (circle.render_x === undefined || circle.render_y === undefined) {
+      circle.render_x = circle.target_render_x;
+      circle.render_y = circle.target_render_y;
+    }
+
+    circle.render_x += (circle.target_render_x - circle.render_x) * 0.9;
+    circle.render_y += (circle.target_render_y - circle.render_y) * 0.9;
+
+    circle_elems[i].style.transform = "translateX(" + circle.render_x + "px) translateY(" + circle.render_y + "px) scale(" + circle.r + ") rotate(" + circle.rotation * 45 + "deg)";
+  }
+
+  requestAnimationFrame(update);
+};
+
+requestAnimationFrame(update);
+
+
+    </script>
+  </body>
+</html>
